@@ -6,81 +6,83 @@ using MyApiRestDapperSQL.Services.Interfaces;
 
 namespace MyApiRestDapperSQL.Services.Implementations
 {
-    public class CustomerService : ICustomerService
+    public class OrderService : IOrderService
     {
         private readonly SqlConnection _dbConnection;
-        public CustomerService(SqlConnection dbConnection)
+
+        public OrderService(SqlConnection dbConnection)
         {
             _dbConnection = dbConnection;
         }
 
-        public async Task<List<Customer>> GetAll()
+        public async Task<List<Order>> GetAll()
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
 
-            // Ejecutar el procedimiento almacenado directamente sin parámetros de cursor
-            var customers = await connection.QueryAsync<Customer>(
-                sql: "dbo.GetAllCustomers", // Nombre del SP sin prefijo de paquete
+            var orders = await connection.QueryAsync<Order>(
+                sql: "dbo.GetAllOrders",
                 commandType: CommandType.StoredProcedure
             );
 
-            return customers.ToList();
+            return orders.ToList();
         }
 
-        public async Task<Customer> GetById(int id)
+        public async Task<Order> GetById(int orderId)
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
 
-
             var parameters = new DynamicParameters();
-            parameters.Add("@p_customer_id", id);
+            parameters.Add("@p_order_id", orderId);
 
-            var customer = await connection.QueryFirstOrDefaultAsync<Customer>(
-                sql: "dbo.GetByIdCustomer",
+            var order = await connection.QueryFirstOrDefaultAsync<Order>(
+                sql: "dbo.GetOrderById",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
             );
 
-            return customer;
+            return order;
         }
 
-        public async Task<int> Add(Customer customer)
+        public async Task<int> Add(Order order)
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
 
             var parameters = new DynamicParameters();
             // Parámetros de entrada
-            parameters.Add("@p_email_address", customer.EMAIL_ADDRESS);
-            parameters.Add("@p_full_name", customer.FULL_NAME);
+            parameters.Add("@p_order_tms", order.ORDER_TMS);
+            parameters.Add("@p_customer_id", order.CUSTOMER_ID);
+            parameters.Add("@p_order_status", order.ORDER_STATUS);
+            parameters.Add("@p_store_id", order.STORE_ID);
             // Parámetro de salida
-            parameters.Add("@p_customer_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
+            parameters.Add("@p_order_id", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             await connection.ExecuteAsync(
-                sql: "dbo.AddCustomer",
+                sql: "dbo.AddOrder",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
             );
 
             // Obtener el ID generado
-            customer.CUSTOMER_ID = parameters.Get<int>("@p_customer_id");
-
-            return customer.CUSTOMER_ID;
+            int newOrderId = parameters.Get<int>("@p_order_id");
+            return newOrderId;
         }
 
-        public async Task Update(Customer customer)
+        public async Task Update(Order order)
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
 
             var parameters = new DynamicParameters();
             // Parámetros de entrada
-            parameters.Add("@p_customer_id", customer.CUSTOMER_ID, DbType.Int32);
-            parameters.Add("@p_email_address", customer.EMAIL_ADDRESS, DbType.String);
-            parameters.Add("@p_full_name", customer.FULL_NAME, DbType.String);
+            parameters.Add("@p_order_id", order.ORDER_ID);
+            parameters.Add("@p_order_tms", order.ORDER_TMS);
+            parameters.Add("@p_customer_id", order.CUSTOMER_ID);
+            parameters.Add("@p_order_status", order.ORDER_STATUS);
+            parameters.Add("@p_store_id", order.STORE_ID);
             // Parámetro de salida
             parameters.Add("@p_rows_updated", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             await connection.ExecuteAsync(
-                sql: "dbo.UpdateCustomer",
+                sql: "dbo.UpdateOrder",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
             );
@@ -89,24 +91,22 @@ namespace MyApiRestDapperSQL.Services.Implementations
 
             if (rowsUpdated != 1)
             {
-                throw new Exception($"La actualización no se completó correctamente. Filas afectadas: {rowsUpdated}");
+                throw new Exception($"La actualización de la orden no se completó correctamente. Filas afectadas: {rowsUpdated}");
             }
-
-
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(int orderId)
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
 
             var parameters = new DynamicParameters();
             // Parámetro de entrada
-            parameters.Add("@p_customer_id", id, DbType.Int32);
+            parameters.Add("@p_order_id", orderId);
             // Parámetro de salida
             parameters.Add("@p_rows_deleted", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
             await connection.ExecuteAsync(
-                sql: "dbo.DeleteCustomer",
+                sql: "dbo.DeleteOrder",
                 param: parameters,
                 commandType: CommandType.StoredProcedure
             );
@@ -115,8 +115,9 @@ namespace MyApiRestDapperSQL.Services.Implementations
 
             if (rowsDeleted < 1)
             {
-                throw new Exception($"No se encontró ningún cliente con ID {id}");
+                throw new Exception($"No se encontró ninguna orden con ID {orderId}");
             }
         }
+
     }
 }
