@@ -103,7 +103,7 @@ namespace MiApiSqlServer.Models
 
 **Nota**: Es fundamental respetar la nomenclatura de las columnas tal como aparecen en la base de datos. Por ejemplo, si una columna se denomina `CUSTOMER_ID` en la base de datos, en nuestro modelo deberíamos nombrarla de manera consistente, como `CUSTOMER_ID`, para evitar inconvenientes al recuperar y mapear los datos.
 
-3. Configurar Dapper para trabajar PascalCase o camelCase:
+3. Configurar JSON , sin convencion a cambios como el camelCase:
 
 en la clase `program.cs` debemos agregar esta linea de codigo:
 
