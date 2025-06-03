@@ -15,6 +15,7 @@ builder.Services.AddScoped<SqlConnection>(_ =>
 // ✅ Agrega servicios para controladores
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderItemService, OrderItemService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
