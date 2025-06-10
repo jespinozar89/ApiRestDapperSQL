@@ -59,6 +59,29 @@ namespace MyApiRestDapperSQL.Controllers
             }
         }
 
+        [HttpGet("name/{name}")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            try
+            {
+                var customer = await _customerService.GetByName(name);
+                if (customer == null)
+                {
+                    return NotFound($"Customer with name {name} not found.");
+                }
+                return Ok(customer);
+            }
+            catch (DbException ex) 
+            {
+                // Log the exception
+                return StatusCode(500, $"Database error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] CustomerDTO customer)
         {

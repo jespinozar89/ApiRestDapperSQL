@@ -44,6 +44,23 @@ namespace MyApiRestDapperSQL.Services.Implementations
             return customer;
         }
 
+        public async Task<Customer> GetByName(string name)
+        {
+            await using var connection = new SqlConnection(_dbConnection.ConnectionString);
+
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@p_customer_name", name);
+
+            var customer = await connection.QueryFirstOrDefaultAsync<Customer>(
+                sql: "dbo.GetByNameCustomer",
+                param: parameters,
+                commandType: CommandType.StoredProcedure
+            );
+
+            return customer;
+        }
+
         public async Task<int> Add(Customer customer)
         {
             await using var connection = new SqlConnection(_dbConnection.ConnectionString);
@@ -118,5 +135,6 @@ namespace MyApiRestDapperSQL.Services.Implementations
                 throw new Exception($"No se encontró ningún cliente con ID {id}");
             }
         }
+
     }
 }

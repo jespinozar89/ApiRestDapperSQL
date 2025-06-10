@@ -52,6 +52,34 @@ BEGIN
 END;
 GO
 
+-- Procedimiento: GetByNameCustomer
+CREATE PROCEDURE [dbo].[GetByNameCustomer]
+    @p_customer_name NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;  -- Mejora de rendimiento
+    
+    BEGIN TRY
+        SELECT 
+            CUSTOMER_ID,
+            EMAIL_ADDRESS,
+            FULL_NAME
+        FROM 
+            CUSTOMERS
+        WHERE 
+            FULL_NAME like '%' + @p_customer_name + '%';
+            
+    END TRY
+    BEGIN CATCH
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        
+        THROW 50001, @ErrorMessage, @ErrorSeverity;
+    END CATCH
+END;
+GO
+
+
 -- Procedimiento: AddCustomer
 CREATE PROCEDURE [dbo].[AddCustomer]
     @p_email_address NVARCHAR(255),
