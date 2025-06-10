@@ -298,3 +298,34 @@ public async Task<IActionResult> Add([FromBody] CustomerDTO customer)
     }
 }
 ```
+
+## 10. Configurar Cors
+
+en nuestro archivo program.cs debemos agregar lo siguiente:
+
+```bash
+var builder = WebApplication.CreateBuilder(args);
+
+// Agregar configuración de CORS al contenedor de servicios
+// Define el nombre de la política CORS
+var corsPolicy = "AllowAngularLocalhost";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsPolicy,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // Permite solicitudes de Angular
+                  .AllowAnyHeader() // Permite cualquier cabecera
+                  .AllowAnyMethod() // Permite cualquier método HTTP
+                  .AllowCredentials(); // Permite credenciales (cookies, autenticación básica, etc.)
+                  
+        });
+});
+
+// Usar la política CORS antes de los controladores
+app.UseCors(corsPolicy);
+app.UseAuthorization();
+
+app.Run();
+```
